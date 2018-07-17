@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+    {{template "_head.html" .Title}}
+    <body>
+        <div class="container">
+            {{template "_header.html"}}
+
+            <div class="row text-center">
+                <div class="col-sm-12">
+                    <div class="input-group mb-3 input-group-lg">
+                        <input type="text" class="form-control" placeholder="What do you wanna know?" autofocus>
+                        <!-- <div class="input-group-append">
+                          <button class="btn btn-success" type="submit">Go</button> 
+                        </div> -->
+                      </div>
+                </div>
+            </div>
+
+            {{template "_footer.html"}}
+        </div>
+        
+
+        <script src="https://cdn.jsdelivr.net/npm/typeit@5.10.1/dist/typeit.min.js">
+        </script>
+        <script>
+            new TypeIt('#head', {
+                strings: ["Ask me anything.", "What is polymorphism in Java?", 
+                        "What are tags in Golang?", "How does Git work?"],
+                speed: 100,
+                breakLines: false,
+                loop: true
+            });
+        </script>
+
+    </body>
+</html>
