@@ -11,6 +11,11 @@ html,body{
     font-family: Georgia;
  }
 
+ /* .pre{
+    font-family: Georgia;
+    color: white;
+ } */
+
  input {
     width: 70%;
  }

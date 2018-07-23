@@ -5,31 +5,87 @@
         <div class="container">
             {{template "_header.html"}}
 
+            
             <div class="row text-center">
-                <div class="col-sm-12">
+                <div class="col-12">
                     <div class="input-group mb-3 input-group-lg">
-                        <input type="text" class="form-control" placeholder="What do you wanna know?" autofocus>
-                        <!-- <div class="input-group-append">
-                          <button class="btn btn-success" type="submit">Go</button> 
-                        </div> -->
-                      </div>
+                        <input id="question" type="text" class="form-control" placeholder="What do you want to know?" autofocus>
+                        <div class="input-group-append">
+                            <button class="btn btn-success" id="butt" type="submit" onclick="ask()">Go</button> 
+                        </div>
+                        </div>
                 </div>
+            </div>
+            
+
+            <div class="text-white" id="demo">
+                
+
             </div>
 
             {{template "_footer.html"}}
         </div>
         
 
-        <script src="https://cdn.jsdelivr.net/npm/typeit@5.10.1/dist/typeit.min.js">
-        </script>
+        <script src="https://cdn.jsdelivr.net/npm/typeit@5.10.1/dist/typeit.min.js"></script>
+        <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
         <script>
+           
+            document.getElementById("question").addEventListener("keyup", function(event) {                
+                if (event.keyCode === 13) {                    
+                    document.getElementById("butt").click();
+                }
+            });
+
+
             new TypeIt('#head', {
-                strings: ["Ask me anything.", "What is polymorphism in Java?", 
-                        "What are tags in Golang?", "How does Git work?"],
+                strings: ["Ask me anything", "How does Git work?",
+                          "What are tags in Golang?", "What is polymorphism in Java?"],
                 speed: 100,
                 breakLines: false,
-                loop: true
+                loop: true,
+                lifeLike : false,
+                startDelay : 1000,
+                nextStringDelay : [1000, 2000]                
             });
+
+            template = `<div class="row text-white">
+                            <h1>*{answerer}</h1>                            
+                        </div>
+                        <div class="row prettyprint">                            
+                            <p>{answer}</p>
+                        </div>`
+
+            function ask(){
+                var xhttp = new XMLHttpRequest();
+                
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        //console.log(this.responseText)
+                        answerJson = JSON.parse(this.responseText);
+                        answers = ""
+                        answerJson.forEach(ans => {
+                            //console.log(ans)
+                            a = template.replace("{answerer}", ans.answerer)
+                            a = a.replace("{answer}", ans.answer)
+                            
+                            //regex = /(<pre>|<\/pre>)/g;
+                            a = a.replace(/<pre>/g, '</br><pre style="color:magenta">')
+                            //a = a.replace(/\n/g, "</br>")                           
+
+                            answers = answers.concat(a)
+                        });
+                        
+                        document.getElementById("demo").innerHTML = answers
+
+                        
+                    }
+                };
+
+                url = "/ask?question=" + document.getElementById("question").value                
+                xhttp.open("GET", url, true);
+                xhttp.send();
+            }
         </script>
 
     </body>
