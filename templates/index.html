@@ -9,7 +9,7 @@
             <div class="row text-center">
                 <div class="col-12">
                     <div class="input-group mb-3 input-group-lg">
-                        <input id="question" type="text" class="form-control" placeholder="What do you want to know?" autofocus>
+                        <input id="query" type="text" class="form-control" placeholder="What do you want to know?" autofocus>
                         <div class="input-group-append">
                             <button class="btn btn-success" id="butt" type="submit" onclick="ask()">Go</button> 
                         </div>
@@ -31,7 +31,7 @@
         <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
         <script>
            
-            document.getElementById("question").addEventListener("keyup", function(event) {                
+            document.getElementById("query").addEventListener("keyup", function(event) {                
                 if (event.keyCode === 13) {                    
                     document.getElementById("butt").click();
                 }
@@ -51,7 +51,7 @@
 
             template = `<div class="row text-white">
                             <h1>*{answerer}</h1>                            
-                        </div>
+                        </div>                        
                         <div class="row prettyprint">                            
                             <p>{answer}</p>
                         </div>`
@@ -80,9 +80,15 @@
 
                         
                     }
+                    else if (this.readyState == 4 && this.status == 204){
+                        a = template.replace("{answerer}", "Clueless")
+                        a = a.replace("{answer}", "Are you sure you'll find the answer to your query on Stack Overflow?")
+
+                        document.getElementById("demo").innerHTML = a
+                    }
                 };
 
-                url = "/ask?question=" + document.getElementById("question").value                
+                url = "/ask?query=" + document.getElementById("query").value                
                 xhttp.open("GET", url, true);
                 xhttp.send();
             }

@@ -6,7 +6,7 @@ import (
 	"github.com/fluhus/gostuff/nlp/wordnet"
 )
 
-func main() {
+func main2() {
 	/* questions := make([]string, 0)
 	questions = append(questions, "what is go in golang?", "it's not right", "beauty's gold the", "a ; b; v")
 	questions = append(questions, "Range over integers in golang")
