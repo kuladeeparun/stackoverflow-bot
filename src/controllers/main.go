@@ -10,8 +10,10 @@ type context struct {
 
 type answer struct {
 	Answerer string `json:"answerer"`
-	/* Question string `json:"question"` */
-	Body string `json:"answer"`
+	Question string `json:"question"`
+	QBody    string `json:"qbody"`
+	Body     string `json:"answer"`
+	AID      string `json:"aID"`
 }
 
 func Register(templates *template.Template) {

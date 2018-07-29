@@ -5,17 +5,50 @@
         <div class="container">
             {{template "_header.html"}}
 
-            
-            <div class="row text-center">
+            <div class="row text-center">                
+
                 <div class="col-12">
                     <div class="input-group mb-3 input-group-lg">
-                        <input id="query" type="text" class="form-control" placeholder="What do you want to know?" autofocus>
+                        <input id="query" type="text" class="form-control" placeholder="What do you want to know?" autofocus required>
                         <div class="input-group-append">
                             <button class="btn btn-success" id="butt" type="submit" onclick="ask()">Go</button> 
+                        </div>
+                        <div class="input-group-append">
+                            <button class="btn btn-info" data-toggle="modal" data-target="#myModal">
+                                &quest;
+                            </button>
                         </div>
                         </div>
                 </div>
             </div>
+
+            <!-- Modal -->
+            <div id="myModal" class="modal fade" role="dialog">
+                <div class="modal-dialog modal-lg">
+            
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                    <h4 class="modal-title">How to</h4>
+                    </div>
+                    <div class="modal-body">
+                    <pre>                  
+                        Let the queries be verbose
+                        If you're unsure about the framing of the query, 
+                        using Google is probably better
+
+                        Response Format-
+                                *Answerer [* because they're the stars]
+                                Question, which links to Stack Overflow
+                                ->
+                                Accepted Answer
+                        </pre>
+                    </div>
+                </div>
+            
+                </div>
+            </div>
+            
             
 
             <div class="text-white" id="demo">
@@ -28,9 +61,10 @@
         
 
         <script src="https://cdn.jsdelivr.net/npm/typeit@5.10.1/dist/typeit.min.js"></script>
-        <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
-        <script>
-           
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    
+        <script>           
             document.getElementById("query").addEventListener("keyup", function(event) {                
                 if (event.keyCode === 13) {                    
                     document.getElementById("butt").click();
@@ -40,7 +74,7 @@
 
             new TypeIt('#head', {
                 strings: ["Ask me anything", "How does Git work?",
-                          "What are tags in Golang?", "What is polymorphism in Java?"],
+                        "What are tags in Golang?", "What is polymorphism in Java?"],
                 speed: 100,
                 breakLines: false,
                 loop: true,
@@ -51,13 +85,23 @@
 
             template = `<div class="row text-white">
                             <h1>*{answerer}</h1>                            
-                        </div>                        
-                        <div class="row prettyprint">                            
+                        </div>
+                        <div class="row question">
+                            <a href="https://stackoverflow.com/a/{aID}"> <h2>{question}</h2> </a>                           
+                        </div>
+                        <div class="row question">
+                            <p>{qbody}</p>                            
+                        </div>       
+                        <p> -> </p>                 
+                        <div class="row">                            
                             <p>{answer}</p>
-                        </div>`
+                        </div>
+                        <hr>`
 
             function ask(){
-                var xhttp = new XMLHttpRequest();
+
+                if (document.getElementById("query").value != ""){
+                    var xhttp = new XMLHttpRequest();
                 
                 xhttp.onreadystatechange = function() {
                     if (this.readyState == 4 && this.status == 200) {
@@ -68,9 +112,13 @@
                             //console.log(ans)
                             a = template.replace("{answerer}", ans.answerer)
                             a = a.replace("{answer}", ans.answer)
+                            a = a.replace("{question}", ans.question)
+                            a = a.replace("{qbody}", ans.qbody)
+                            a = a.replace("{aID}", ans.aID)
                             
                             //regex = /(<pre>|<\/pre>)/g;
-                            a = a.replace(/<pre>/g, '</br><pre style="color:magenta">')
+                            a = a.replace(/<pre>/g, '<pre style="color:magenta">')
+                            //a = a.replace(/<\/pre>/g, '</pre> <br> <hr>')
                             //a = a.replace(/\n/g, "</br>")                           
 
                             answers = answers.concat(a)
@@ -83,14 +131,19 @@
                     else if (this.readyState == 4 && this.status == 204){
                         a = template.replace("{answerer}", "Clueless")
                         a = a.replace("{answer}", "Are you sure you'll find the answer to your query on Stack Overflow?")
-
+                        a = a.replace("{question}", "")
+                        a = a.replace("{qbody}", "")
+                        a = a.replace("{aID}", "")
                         document.getElementById("demo").innerHTML = a
                     }
                 };
 
-                url = "/ask?query=" + document.getElementById("query").value                
+                url = "/ask?query=" + document.getElementById("query").value    
+                //console.log(url)            
                 xhttp.open("GET", url, true);
                 xhttp.send();
+            
+                }
             }
         </script>
 

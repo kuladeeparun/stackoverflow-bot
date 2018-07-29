@@ -1,25 +1,44 @@
 html,body{
-    min-height:100%;
-    background-color: #202020;
- }
+min-height:100%;
+background-color: #202020;
+}
 
- footer {
+footer {
+background-color: white;
+}
+
+hr {
     background-color: white;
- }
+}
 
- .title{
-    font-family: Georgia;
- }
+p{
+    width: 100%;
+}
 
- /* .pre{
-    font-family: Georgia;
-    color: white;
- } */
+.title{
+font-family: Georgia;
+}
 
- input {
-    width: 70%;
- }
+.question{
+font-family: Georgia;
+color: yellowgreen;
+/* color: greenyellow; */
+}
 
- #heart{
-    border-bottom: 2px solid black;
- }
+.c{
+font-family: Georgia;
+color: magenta;
+}
+
+/* .pre{
+font-family: Georgia;
+color: white;
+} */
+
+input {
+width: 70%;
+}
+
+#heart{
+border-bottom: 2px solid black;
+}

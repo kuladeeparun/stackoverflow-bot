@@ -6,11 +6,16 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"nlp"
 	"strings"
 
 	"github.com/bbalet/stopwords"
 	"github.com/tidwall/gjson"
 )
+
+var qId2TitleMap map[string]string
+var qId2BodyMap map[string]string
+var qTitle2IdMap map[string]string
 
 func ask() {
 	http.HandleFunc("/ask", func(w http.ResponseWriter, req *http.Request) {
@@ -18,11 +23,22 @@ func ask() {
 		cleanQuery := stopwords.CleanString(query, "en", true)
 		println(cleanQuery)
 
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println("Panic occured: ", r)
+			}
+		}()
+
 		tags := getTags(cleanQuery, w)
 
-		answerIDs := getQuestions(cleanQuery, tags, w)
+		qId2TitleMap = make(map[string]string)
+		qId2BodyMap = make(map[string]string)
+		qTitle2IdMap = make(map[string]string)
+		_ = getQuestions(cleanQuery, tags, w)
 
-		dat := getAnswers(answerIDs, w)
+		relevantAnswerIDs, _ := nlp.MatchingQuestions(query, qTitle2IdMap)
+
+		dat := getAnswers(relevantAnswerIDs, w)
 		json.NewEncoder(w).Encode(dat)
 	})
 }
@@ -49,15 +65,15 @@ func getTags(cleanQuery string, w http.ResponseWriter) string {
 	} else {
 		println("No tags found for the question")
 		w.WriteHeader(204)
+		panic("No tags")
 	}
 	return tags.String()
 }
 
 func getQuestions(cleanQuery, tags string, w http.ResponseWriter) []string {
 	qhead := "https://api.stackexchange.com/2.2/search/advanced?order=desc&sort=activity&q=%s"
-	qtail := "&tagged=%s&accepted=True&site=stackoverflow"
+	qtail := "&tagged=%s&accepted=True&filter=!9Z(-wwYGT&site=stackoverflow"
 	qurl := fmt.Sprint(fmt.Sprintf(qhead, strings.Replace(cleanQuery, " ", "%20", -1)), fmt.Sprintf(qtail, tags))
-	println(qurl)
 
 	qJson := fetch(qurl)
 	items := gjson.Get(string(qJson), "items").Array()
@@ -73,11 +89,19 @@ func getQuestions(cleanQuery, tags string, w http.ResponseWriter) []string {
 			a.Link = ans.Get("link").String()
 
 			*dat = append(*dat, *a) */
-			*ids = append(*ids, ans.Get("accepted_answer_id").String())
+			id := ans.Get("accepted_answer_id").String()
+			title := ans.Get("title").String()
+			body := ans.Get("body").String()
+			*ids = append(*ids, id)
+			qId2TitleMap[id] = title
+			qId2BodyMap[id] = body
+			qTitle2IdMap[title] = id
+
 		}
 	} else {
 		println("No answers found for the question")
 		w.WriteHeader(204)
+		panic("No answers")
 	}
 	return *ids
 }
@@ -87,7 +111,6 @@ func getAnswers(ids []string, w http.ResponseWriter) []answer {
 	atail := "?order=desc&sort=activity&site=stackoverflow&filter=!9Z(-wzu0T"
 
 	aurl := fmt.Sprint(fmt.Sprintf(ahead, strings.Join(ids, ";")), atail)
-	println(aurl)
 
 	dat := new([]answer)
 
@@ -95,20 +118,31 @@ func getAnswers(ids []string, w http.ResponseWriter) []answer {
 
 	items := gjson.Get(string(ajson), "items").Array()
 
-	for _, ans := range items {
-		a := new(answer)
-		a.Answerer = ans.Get("owner.display_name").String()
-		a.Body = ans.Get("body").String()
+	//fmt.Println(qId2TitleMap)
 
-		*dat = append(*dat, *a)
+	for _, ansID := range ids {
+		for _, ans := range items {
+
+			qid := ans.Get("answer_id").String()
+			if ansID == qid {
+				a := new(answer)
+				a.Answerer = ans.Get("owner.display_name").String()
+				a.Body = ans.Get("body").String()
+
+				//fmt.Println(qid)
+				a.Question = qId2TitleMap[qid]
+				a.QBody = qId2BodyMap[qid]
+				a.AID = qid
+				*dat = append(*dat, *a)
+			}
+		}
 	}
-
 	return *dat
 
 }
 
 func fetch(url string) string {
-	fmt.Println(url)
+	//fmt.Println(url)
 	resp, err := http.Get(url)
 
 	if err != nil {
